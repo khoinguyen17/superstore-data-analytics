@@ -17,31 +17,51 @@ discounts to identify trends and business opportunities.
 
 ## Dataset
 
-Superstore transactional dataset containing 10,194 records.
+Retail Store Sales dataset containing 12,575 transaction records.
 
-The raw dataset is not included in this repository. It is kept locally
-because the original dataset's redistribution terms have not been
-verified.
+The dataset contains intentionally messy data, including missing and invalid values that were identified and cleaned using SQL.
+
+The raw dataset is not included in this repository. It is kept locally because the raw data is not required for the analysis repository.
 
 ## Data Quality
 
-The analysis includes checks for:
+The raw dataset was profiled before cleaning.
+
+Data quality checks included:
 
 - Row counts
 - Missing values
-- Duplicate records
-- Date validity
-- Data types and formatting
+- Blank text values
+- Duplicate transaction IDs
+- Numeric range checks
+- Invalid zero prices
+- Total Spent calculation consistency
+
+Key issues identified:
+
+- 1,213 blank item values
+- 609 invalid `price_per_unit` values recorded as 0
+- 604 missing quantity values represented as 0
+- 604 missing total spent values represented as 0
+
+Cleaning steps included:
+
+- Recovering invalid prices using `Total Spent / Quantity`
+- Converting missing quantity and total spent values from 0 to NULL
+- Replacing blank item values with `Unknown`
+- Preserving the original raw table for reproducibility
 
 ## Analysis
 
 Key questions include:
 
-- Which categories and products generate the most profit?
-- Which regions perform best?
-- How do discounts affect profitability?
-- Which customers generate the most revenue and profit?
-- How do sales and profit change over time?
+- Which product categories generate the most sales?
+- Which products generate the most revenue?
+- Which payment methods are most commonly used?
+- How do sales vary by store location?
+- How do sales change over time?
+- How does discount usage relate to sales?
+- Which customers generate the most revenue?
 
 ## Dashboard
 
