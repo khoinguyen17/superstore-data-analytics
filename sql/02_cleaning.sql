@@ -1,5 +1,7 @@
--- Retail Store Sales Data Analytics
--- 02_cleaning.sql
+-- =========================================================
+-- PROJECT: RETAIL STORE SALES DATA ANALYTICS
+-- FILE: 02_cleaning.sql
+-- =========================================================
 --
 -- Purpose:
 -- Create and maintain a cleaned version of the raw retail sales data.
@@ -98,7 +100,6 @@ SET SQL_SAFE_UPDATES = 1;
 -- available fields, so the values were labeled 'Unknown'
 -- rather than guessing.
 
-
 SET SQL_SAFE_UPDATES = 0;
 
 UPDATE retail_sales_clean
@@ -114,7 +115,6 @@ SET SQL_SAFE_UPDATES = 1;
 --
 -- Verify that invalid zero prices have been corrected.
 
-
 SELECT COUNT(*) AS remaining_zero_prices
 FROM retail_sales_clean
 WHERE price_per_unit = 0;
@@ -124,7 +124,6 @@ WHERE price_per_unit = 0;
 -- Quantity × Price Per Unit
 --
 -- Rows with missing quantity/total are excluded from this check.
-
 
 SELECT COUNT(*) AS remaining_mismatches
 FROM retail_sales_clean
@@ -136,14 +135,12 @@ WHERE quantity IS NOT NULL
 
 -- Verify that blank item values have been removed.
 
-
 SELECT COUNT(*) AS remaining_blank_items
 FROM retail_sales_clean
 WHERE TRIM(item) = '';
 
 
 -- Count values labeled as Unknown.
-
 
 SELECT COUNT(*) AS unknown_items
 FROM retail_sales_clean
@@ -153,8 +150,64 @@ WHERE item = 'Unknown';
 -- Verify that missing quantities and totals are now represented
 -- as NULL rather than misleading zero values.
 
-
 SELECT
     SUM(quantity IS NULL) AS missing_quantity,
     SUM(total_spent IS NULL) AS missing_total_spent
 FROM retail_sales_clean;
+
+
+-- 4,199 discount status values were missing or displayed blank.
+-- Determine the length and hexadecimal representation of discount_applied to identify issues.
+
+SELECT
+    discount_applied,
+    LENGTH(discount_applied) AS len,
+    HEX(discount_applied) AS hex_value,
+    COUNT(*) AS n
+FROM retail_sales_clean
+GROUP BY discount_applied, LENGTH(discount_applied), HEX(discount_applied);
+
+-- Identified the cause of missing or blank discount status is due to carriage return.
+-- Remove and replace trailing carriage return characters from discount_applied with NULL.
+
+UPDATE retail_sales_clean
+SET discount_applied = TRIM(TRAILING '\r' FROM discount_applied);
+
+UPDATE retail_sales_clean
+SET discount_applied = NULL
+WHERE discount_applied = '';
+
+-- =========================================================
+-- DATA CLEANING FINDINGS AND RESULTS
+-- =========================================================
+--
+-- Raw dataset:
+--     12,575 transaction rows
+--
+-- Issues identified:
+-- 1. 1,213 blank item values.
+-- 2. 609 zero price_per_unit values.
+-- 3. 609 Total Spent calculation mismatches caused by zero prices.
+-- 4. 604 rows with quantity = 0 and total_spent = 0.
+-- 5. 4,199 discount status values were missing or displayed blank.
+-- 6. Carriage returns affected the discount_applied values.
+--
+-- Cleaning decisions:
+-- 1. Recover zero prices using total_spent / quantity when possible.
+-- 2. Convert invalid zero quantity and total_spent values to NULL.
+-- 3. Replace blank item values with 'Unknown'.
+-- 4. Correct the carriage-return issue in discount_applied.
+-- 5. Preserve the raw table for reproducibility.
+--
+-- Validation results:
+-- 1. Remaining zero prices: 0.
+-- 2. Remaining Total Spent calculation mismatches: 0
+--    when valid numeric values are checked.
+-- 3. Remaining blank item values: 0.
+-- 4. Missing quantity values: 604.
+-- 5. Missing total_spent values: 604.
+--
+-- Note:
+-- Missing values were preserved when they could not be
+-- reliably reconstructed. Discount status remains NULL
+-- for transactions whose status is unknown.
