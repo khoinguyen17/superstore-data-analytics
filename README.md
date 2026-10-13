@@ -1,4 +1,4 @@
-# Superstore Data Analytics
+# Retail Store Data Analytics
 
 End-to-end Superstore sales and profitability analysis using MySQL
 and Tableau Public.
