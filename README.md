@@ -1,6 +1,6 @@
 # Retail Store Data Analytics
 
-End-to-end Superstore sales and profitability analysis using MySQL
+End-to-end retail store sales and profitability analysis using MySQL
 and Tableau Public.
 
 ## Objective
